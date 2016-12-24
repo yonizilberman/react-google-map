@@ -16,7 +16,8 @@ var AppClass = React.createClass({
          (function (d, s, id) {
              var js, fjs = d.getElementsByTagName(s)[d.getElementsByTagName(s).length - 1];
              if (d.getElementById(id)) {
-             // if maps object as 
+                 // if maps object as 
+                 MapsHelper.init(googleMapsObject);
                  return;
              }
              js = d.createElement(s);
