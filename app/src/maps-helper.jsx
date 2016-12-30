@@ -20,13 +20,17 @@
             __this.setService();
             __this.setInfoWindow();
 
+            /* set search field so user can search */
+            __this.setSearchField();
+            __this.searchPlace();
+
             /* show user location if user allow share his location */
             userLocationOnMap();
 
             // This event listener will call addMarker() when the map is clicked.
             this.map.addListener('click', (event) => {
                 if (__this.marker != null) {
-                    __this.clearMarkerObject(__this.marker);
+                    _clearMarkerObject(__this.marker);
                 }
                 __this.addMarker(event.latLng, 'click');
             });
@@ -49,7 +53,7 @@
             __this.mapObject = googleMaps;
         },
         /*   set google geocoder        */
-        setGeocoder() {
+        setGeocoder () {
             __this.geocoder = new __this.mapObject.Geocoder;
         },
         /*   set google service         */
@@ -57,11 +61,11 @@
             __this.service = new __this.mapObject.places.PlacesService(__this.map);
         },
         /*   set google InfoWindow      */
-        setInfoWindow: function () {
+        setInfoWindow () {
             __this.infoWindow = new __this.mapObject.InfoWindow();
         },
         /*   add marker to map          */
-        addMarker: function (location, mouseEvent) {
+        addMarker (location, mouseEvent) {
             __this.geocoder.geocode({'location': location}, function (results, status) {
                 var locationText = 'Unavailable';
                 var flag = false;
@@ -109,7 +113,7 @@
             });
         },
         /*   set google Marker Options      */
-        setMarkerOptions: function (addLocation) {
+        setMarkerOptions (addLocation) {
             __this.marker.setVisible(true);
 
             __this.infoWindow.setContent(addLocation);
@@ -126,20 +130,61 @@
             });
         },
         /*   clear marker's infoWindow from map      */
-        removerMarker: function (marker, infoWindow) {
-            __this.clearMarkerObject(marker);
+        removerMarker (marker, infoWindow) {
+            _clearMarkerObject(marker);
             window.setTimeout(function () {
                 __this.mapObject.event.clearListeners(infoWindow, 'closeclick'); // delay a bit to allow the other 'closeclick' event (that changes URL) to occur
             }, 100);
         },
-        /*   clear marker from map      */
-        clearMarkerObject: function (marker) {
-            if (marker) {
-                marker.setMap(null);
-                marker = null;
-            }
-            return;
+        /*   set google Search Field    */
+        setSearchField () {
+            var input = document.getElementById('mapSearchAddress');
+
+            __this.autoComplete = new __this.mapObject.places.Autocomplete(input);
+            __this.autoComplete.bindTo('bounds', __this.map);
+
+            __this.map.controls[__this.mapObject.ControlPosition.RIGHT_BOTTOM].push(input);
+
+            //__this.infoWindow = new __this.mapObject.InfoWindow();
         },
+        searchPlace () {
+            __this.autoComplete.addListener('place_changed', function () {
+                // remove marker for map to set new one
+                _clearMarkerObject(__this.marker);
+
+                var place = __this.autoComplete.getPlace();
+                if (!place.geometry) {
+                    return;
+                }
+
+                var locationCoords = place.geometry.location;
+
+                if (place.geometry.viewport) {
+                    __this.map.fitBounds(place.geometry.viewport);
+                } else {
+                    __this.map.setCenter(locationCoords);
+                }
+
+                __this.marker = _appMarker({
+                    zoom: 17,
+                    animation: __this.mapObject.Animation.DROP
+                });
+
+                // Set the position of the marker using the place ID and location.
+                __this.marker.setPlace({
+                    placeId: place.place_id,
+                    location: locationCoords
+                });
+
+                __this.setMarkerOptions(
+                    _addLocation({
+                        address: place.formatted_address,
+                        lat: locationCoords.lat(),
+                        lng: locationCoords.lng()
+                    })
+                );
+            });
+        }
 	};
 
     /*
@@ -149,7 +194,7 @@
      *      show user location if user allow share his location
      */
 
-    function userLocationOnMap () {
+    var userLocationOnMap = () => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(function (position) {
                 var pos = {
@@ -168,20 +213,20 @@
         }
     }
 
-    function handleLocationError (browserHasGeolocation, infoWindow, pos) {
+    var handleLocationError = (browserHasGeolocation, infoWindow, pos) => {
         infoWindow.setPosition(pos);
         infoWindow.setContent(browserHasGeolocation ?
             'Error: The Geolocation service failed.' :
             'Error: Your browser doesn\'t support geolocation.');
     }
 
-    function _appMarker(markerOptions) {
+    var _appMarker = (markerOptions) => {
         markerOptions.map = __this.map;
 
         return new __this.mapObject.Marker(markerOptions);
     }
 
-    function _addLocation(location) {
+    var _addLocation = (location) => {
         /*
          * address - $newLocation.find('.textArea div').text()
          * label - $newLocation.find('input').val()
@@ -198,7 +243,16 @@
         );
     }
 
-    function _addMapEventListener(element, event, callBack) {
+    /*   clear marker from map      */
+    var _clearMarkerObject = (marker) => {
+        if (marker) {
+            marker.setMap(null);
+            marker = null;
+        }
+        return;
+    }
+
+    var _addMapEventListener = (element, event, callBack) => {
         return __this.mapObject.event.addListener(element, event, callBack);
     }
 
