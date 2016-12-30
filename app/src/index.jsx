@@ -39,7 +39,10 @@ var AppClass = React.createClass({
     componentDidMount () {},
     render () {
         return (
-            <div id="googleMap" />
+           <div id="maps">
+               <input id="mapSearchAddress"/>
+               <div id="googleMap" />
+           </div>
         );
     }
 });
