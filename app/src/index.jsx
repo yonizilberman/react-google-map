@@ -5,7 +5,7 @@ var ReactDOM = require('react-dom');
 /*
  * react object (class)
  * */
- var MapsHelper = require('./maps-helper');
+ var GoogleMaps = require('./map/google-maps');
 
 var AppClass = React.createClass({
     mixins: [],
@@ -13,36 +13,14 @@ var AppClass = React.createClass({
         return true;
     },
     componentWillMount () {
-         (function (d, s, id) {
-             var js, fjs = d.getElementsByTagName(s)[d.getElementsByTagName(s).length - 1];
-             if (d.getElementById(id)) {
-                 // if maps object as 
-                 MapsHelper.init(googleMapsObject);
-                 return;
-             }
-             js = d.createElement(s);
-             js.id = id;
-             js.src = "https://maps.googleapis.com/maps/api/js?key=__KEY__&libraries=places&callback=initMap";
-             fjs.parentNode.insertBefore(js, fjs);
-         }(document, 'script', 'google-map-sdk'));
-
-         var initMap = window.initMap = () => {
-             this.showAppMap(google.maps);
-         };
     },
-    showAppMap (googleMapsObject) {
-    	MapsHelper.init(googleMapsObject);
-    }
-    ,getInitialState () {
+    getInitialState () {
         return {};
     },
     componentDidMount () {},
     render () {
         return (
-           <div id="maps">
-               <input id="mapSearchAddress"/>
-               <div id="googleMap" />
-           </div>
+            <GoogleMaps />
         );
     }
 });
